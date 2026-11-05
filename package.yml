@@ -1,0 +1,18 @@
+package: community.lazycat.app.airhand
+name: Airhand
+description: "Remote desktop over QUIC: a relay server plus a browser console to control a remote machine."
+version: 0.1.0
+min_os_version: "1.5.0"
+homepage: https://github.com/sqlpxc/airhand
+author: sqlpxc
+license: MIT
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Airhand
+    description: "基于 QUIC 的远程桌面：中转服务器 + 浏览器控制台，可在网页里控制另一台电脑。"
+  en:
+    name: Airhand
+    description: "Remote desktop over QUIC: a relay server plus a browser console to control a remote machine."

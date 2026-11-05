@@ -1,0 +1,16 @@
+manifest: ./lzc-manifest.yml
+pkgout: ./dist
+icon: ./icon.png
+contentdir: ./content
+# Built from upstream source at package-build time (see buildscript.sh).
+# Upstream publishes no images, so both services are embedded.
+images:
+  airhand-server:
+    dockerfile: ./upstream/server/Dockerfile
+    context: ./upstream
+    builder: local
+  airhand-web:
+    dockerfile: ./upstream/web/Dockerfile
+    context: ./upstream
+    builder: local
+buildscript: ./buildscript.sh

@@ -1,0 +1,33 @@
+params:
+  - id: web_password
+    type: secret
+    name: Console password
+    description: "Password for the browser console (any username). Required: leaving it blank would let anyone who can reach the app control remote machines."
+    default_value: "$random(len=20)"
+    optional: false
+
+  - id: max_sessions
+    type: string
+    name: Max sessions per host
+    description: "How many controllers may connect to one target at the same time."
+    default_value: "4"
+    optional: false
+
+  - id: cert_names
+    type: string
+    name: Certificate names
+    description: "Comma-separated domains/IPs written into the auto-generated TLS certificates."
+    default_value: "airhand,localhost"
+    optional: false
+
+locales:
+  zh:
+    web_password:
+      name: 控制台密码
+      description: 浏览器控制台的访问密码（用户名随意）。必填——留空等于任何能访问该应用的人都能远程控制机器。
+    max_sessions:
+      name: 单机最大会话数
+      description: 同一台被控端最多允许几个控制端同时连接。
+    cert_names:
+      name: 证书域名
+      description: 自动生成的 TLS 证书里写入的域名/IP，多个用英文逗号分隔。

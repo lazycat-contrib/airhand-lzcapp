@@ -1,0 +1,60 @@
+application:
+  subdomain: airhand
+  multi_instance: false
+  # The web console has its own password prompt, so it authenticates itself.
+  public_path:
+    - /
+  upstreams:
+    - location: /
+      backend: http://airhand-web:8080/
+  ingress:
+    # The relay speaks QUIC, which is UDP-only. Clients (desktop app or the
+    # bundled web console) reach it on this port.
+    - protocol: udp
+      port: 4433
+      service: airhand-server
+services:
+  airhand-server:
+    image: embed:airhand-server
+    environment:
+      - RUST_LOG=info
+      - AIRHAND_CERT_NAMES={{ .U.cert_names }}
+      - AIRHAND_MAX_SESSIONS={{ .U.max_sessions }}
+    binds:
+      # Auto-generated TLS certificate; kept so the relay identity is stable.
+      - /lzcapp/var/relay:/data
+  airhand-web:
+    image: embed:airhand-web
+    environment:
+      - RUST_LOG=info
+      - AIRHAND_SERVER=airhand-server:4433
+      # Left empty on purpose: the relay generates its own certificate at first
+      # start and its fingerprint is only visible in the container logs, which
+      # users cannot read here. See the usage note below.
+      - AIRHAND_SERVER_FP=
+      - AIRHAND_NAME=Airhand Web
+      - AIRHAND_WEB_PASSWORD={{ .U.web_password }}
+      - AIRHAND_WEB_CERT_NAMES={{ .U.cert_names }}
+    binds:
+      - /lzcapp/var/web:/data
+    depends_on:
+      - airhand-server
+usage: |
+  Airhand 是基于 QUIC 的远程桌面工具。本应用提供两部分：
+
+  1. 中转服务器（relay）：监听 UDP 4433，负责在控制端与被控端之间转发画面与输入。
+  2. 网页控制台：在浏览器里直接远程控制另一台电脑，打开本应用入口即可。
+
+  使用步骤：
+    - 在被控的电脑上安装 Airhand 桌面客户端（被控端模式），托盘会显示 6 位控制码。
+    - 在浏览器打开本应用入口，输入访问密码（安装时设置），再填控制码即可接管。
+
+  重要说明：
+    - 中转走 UDP 4433。请在防火墙放行该 UDP 端口，否则无法建立连接。
+    - 网页控制台自带密码保护，所以本应用直接对外开放（使用 public_path）。
+    - 中转服务器首次启动会自生成 TLS 证书。原本客户端靠比对证书指纹来防中间人，
+      但容器里看不到启动日志、也就拿不到指纹，因此本包不校验指纹。
+      如果这条对你很重要，请在受信任的网络内使用，或自行替换为可信证书。
+    - 控制台用的是自签名证书，浏览器首次访问会提示不安全，确认继续即可。
+    - 被控端的画面采集与键鼠注入由桌面客户端完成，容器无法替代；本包不含被控端。
+    - 未做实机验证。
